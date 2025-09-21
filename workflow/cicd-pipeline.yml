@@ -1,0 +1,52 @@
+name: CI/CD Pipeline - ML API
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: graphite-byte-472516-n8
+  REGION: us-central1
+  REPO_NAME: ml-repo
+  IMAGE_NAME: ml-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          version: "421.0.0"
+
+      - name: Configure Service Account and Docker
+        run: |
+          echo "${{ secrets.GCP_SA_KEY_BASE64 }}" | base64 --decode > /tmp/sa.json
+          gcloud auth activate-service-account --key-file=/tmp/sa.json
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Set Docker image version
+        id: set-version
+        run: echo "version=$(date +%Y.%m.%d.%H%M)" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-version.outputs.version }} .
+          docker tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-version.outputs.version }} \
+                     ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-version.outputs.version }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.IMAGE_NAME }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-version.outputs.version }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated
