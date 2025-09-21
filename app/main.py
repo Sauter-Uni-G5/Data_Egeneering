@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.controllers import ear_controller, hydro_controller
+from app.controllers import ear_controller, hydro_controller, weather_controller
 
 app = FastAPI(
     title="ONS Data API", 
@@ -9,6 +9,7 @@ app = FastAPI(
 
 app.include_router(ear_controller.router, prefix="/api", tags=["EAR - Energia Armazenada"])
 app.include_router(hydro_controller.router, prefix="/api", tags=["Hydro - Dados Hidráulicos"])
+app.include_router(weather_controller.router, prefix="/api", tags=["Weather - Meteorologia"])
 
 @app.get("/")
 def read_root():
