@@ -4,9 +4,9 @@ from app.services.ons_service import get_reservoir_data
 
 router = APIRouter()
 
-@router.get("/data/ear")
-def get_ear_data(
-    package_id: str = Query(..., description="Package ID do dataset EAR"),
+@router.get("/data/hydro")
+def get_hydro_data(
+    package_id: str = Query(..., description="Package ID do dataset hidráulico"),
     ano: Optional[int] = Query(None, description="Ano específico"),
     mes: Optional[int] = Query(None, description="Mês específico"),
     nome_reservatorio: Optional[str] = Query(None, description="Nome do reservatório para filtrar"),
@@ -15,5 +15,5 @@ def get_ear_data(
     page: int = Query(1, description="Número da página"),
     page_size: int = Query(100, description="Tamanho da página")
 ):
-    """Endpoint para dados de Energia Armazenada em Reservatórios (EAR)"""
+    """Endpoint para dados hidráulicos de usinas hidrelétricas"""
     return get_reservoir_data(package_id, ano, mes, nome_reservatorio, start_date, end_date, page, page_size)
