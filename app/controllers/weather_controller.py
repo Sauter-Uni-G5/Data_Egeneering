@@ -19,3 +19,4 @@ def get_weather_direct(latitude: float, longitude: float, start_date: str, end_d
     except Exception as e:
         print(f"Erro no weather_direct: {e}")
         return {}
+
