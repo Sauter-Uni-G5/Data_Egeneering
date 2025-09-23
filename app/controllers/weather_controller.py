@@ -12,3 +12,11 @@ def get_weather(
     end_date: str = Query(..., description="Data final (YYYY-MM-DD)")
 ):
     return get_weather_data(latitude, longitude, start_date, end_date)
+
+def get_weather_direct(latitude: float, longitude: float, start_date: str, end_date: str):
+    try:
+        return get_weather_data(latitude, longitude, start_date, end_date)
+    except Exception as e:
+        print(f"Erro no weather_direct: {e}")
+        return {}
+

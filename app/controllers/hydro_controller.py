@@ -15,4 +15,38 @@ def get_hydro_data(
     page: int = Query(1, description="Número da página"),
     page_size: int = Query(100, description="Tamanho da página")
 ):
-    return get_reservoir_data(package_id, ano, mes, nome_reservatorio, start_date, end_date, page, page_size)
+    """Endpoint para dados hidráulicos de usinas hidrelétricas"""
+    return get_reservoir_data(
+        package_id, ano, mes, nome_reservatorio, start_date, end_date, page, page_size
+    )
+
+def get_hydro_data_direct(
+    package_id: str,
+    ano: Optional[int] = None,
+    mes: Optional[int] = None,
+    nome_reservatorio: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 100
+):
+    try:
+        result = get_reservoir_data(
+            package_id=package_id,
+            ano=ano,
+            mes=mes,
+            nome_reservatorio=nome_reservatorio,
+            start_date=start_date,
+            end_date=end_date,
+            page=page,
+            page_size=page_size
+        )
+        if hasattr(result, 'body'):
+            import json
+            data = json.loads(result.body)
+            return data.get('data', [])
+        else:
+            return result
+    except Exception as e:
+        print(f"Erro no hydro_direct: {e}")
+        return []
