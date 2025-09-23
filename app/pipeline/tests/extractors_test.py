@@ -1,91 +1,92 @@
 import logging
+import pandas as pd
+
 from app.controllers.registry_controller import get_registry_direct
-from app.controllers.hydro_controller import get_hydro_data_direct
+from app.controllers.hydro_controller import get_hydro_data_direct  
 from app.controllers.ear_controller import get_ear_data_direct
 from app.controllers.weather_controller import get_weather_direct
 
 from app.pipeline.extractors.ons_extractor import extract_registry_to_df, extract_hydro_to_df, extract_ear_to_df
 from app.pipeline.extractors.weather_extractor import extract_weather_to_dict, extract_multiple_weather_to_df
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
-def teste_ons_extractors():
-    print("🧪 TESTE ONS EXTRACTORS")
-    print("-" * 40)
+def teste_completo():
+    """Teste simples: Controller → Extractor → DataFrame"""
+    print("🧪 TESTE EXTRACTORS COMPLETO")
+    print("=" * 50)
     
-    # 1. Registry
-    print("1. Registry:")
-    try:
-        raw_registry = get_registry_direct("61e92787-9847-4731-8b73-e878eb5bc158")  # Função direta
-        df_registry = extract_registry_to_df(raw_registry)  # Extractor
-        print(f"   Raw type: {type(raw_registry)}")
-        print(f"   DataFrame: {len(df_registry)} registros")
-        if len(df_registry) > 0:
-            print(f"   Colunas: {list(df_registry.columns)[:5]}")
-    except Exception as e:
-        print(f"   Erro: {e}")
+    REGISTRY_PACKAGE = "61e92787-9847-4731-8b73-e878eb5bc158"
+    HYDRO_PACKAGE = "98a9aa79-06fe-4a9f-ac6b-04aa707bdfca"
+    EAR_PACKAGE = "61e92787-9847-4731-8b73-e878eb5bc158"
     
-    # 2. Hydro
-    print("2. Hydro:")
+    # 1. TESTE REGISTRY
+    print("\n1️⃣ REGISTRY:")
+    print("-" * 20)
     try:
-        raw_hydro = get_hydro_data_direct("98a9aa79-06fe-4a9f-ac6b-04aa707bdfca", page_size=100)  # Função direta
-        df_hydro = extract_hydro_to_df(raw_hydro)  # Extractor
-        print(f"   Raw type: {type(raw_hydro)}")
-        print(f"   DataFrame: {len(df_hydro)} registros")
-        if len(df_hydro) > 0:
-            print(f"   Colunas: {list(df_hydro.columns)[:5]}")
+        raw_registry = get_registry_direct(REGISTRY_PACKAGE)
+        print(f"Controller retornou: {type(raw_registry)}")
+        print(f"Tamanho: {len(raw_registry) if isinstance(raw_registry, (list, dict)) else 'N/A'}")
+        df_registry = extract_registry_to_df(raw_registry)
+        print(f"Extractor criou: DataFrame com {len(df_registry)} registros")
+        if not df_registry.empty:
+            print("Colunas:", list(df_registry.columns)[:5], "...")
+            print("Preview:")
+            print(df_registry.head(2).to_string())
     except Exception as e:
-        print(f"   Erro: {e}")
-    
-    # 3. EAR
-    print("3. EAR:")
-    try:
-        raw_ear = get_ear_data_direct("61e92787-9847-4731-8b73-e878eb5bc158", page_size=100)  # Função direta
-        df_ear = extract_ear_to_df(raw_ear)  # Extractor
-        print(f"   Raw type: {type(raw_ear)}")
-        print(f"   DataFrame: {len(df_ear)} registros")
-        if len(df_ear) > 0:
-            print(f"   Colunas: {list(df_ear.columns)[:5]}")
-    except Exception as e:
-        print(f"   Erro: {e}")
+        print(f"❌ Erro no Registry: {e}")
 
-def teste_weather_extractors():
-    print("\n🌤️ TESTE WEATHER EXTRACTORS")
-    print("-" * 40)
-    
-    # 1. Weather único
-    print("1. Weather único:")
+    # 2. TESTE HYDRO
+    print("\n2️⃣ HYDRO:")
+    print("-" * 20)
     try:
-        raw_weather = get_weather_direct(-15.7939, -47.8828, "2020-01-01", "2020-01-03")  # Função direta
-        weather_dict = extract_weather_to_dict(raw_weather, -15.7939, -47.8828, "BSB")  # Extractor
-        print(f"   Raw type: {type(raw_weather)}")
-        print(f"   Status: {weather_dict['extraction_status']}")
-        print(f"   Dados: {'SIM' if weather_dict['weather_data'] else 'NÃO'}")
+        raw_hydro = get_hydro_data_direct(HYDRO_PACKAGE, start_date="2020-01-01", end_date="2020-12-31", page_size=50)
+        print(f"Controller retornou: {type(raw_hydro)}")
+        print(f"Tamanho: {len(raw_hydro) if isinstance(raw_hydro, (list, dict)) else 'N/A'}")
+        df_hydro = extract_hydro_to_df(raw_hydro)
+        print(f"Extractor criou: DataFrame com {len(df_hydro)} registros")
+        if not df_hydro.empty:
+            print("Colunas:", list(df_hydro.columns)[:5], "...")
+            print("Preview:")
+            print(df_hydro.head(2).to_string())
     except Exception as e:
-        print(f"   Erro: {e}")
-    
-    # 2. Weather múltiplo
-    print("2. Weather múltiplo:")
+        print(f"❌ Erro no Hydro: {e}")
+
+    # 3. TESTE EAR
+    print("\n3️⃣ EAR:")
+    print("-" * 20)
     try:
-        # Simular múltiplas chamadas
-        weather_results = []
-        
-        coordinates = [
-            (-15.7939, -47.8828, "BSB"),
-            (-23.5505, -46.6333, "SP")
-        ]
-        
-        for lat, lng, city_id in coordinates:
-            raw_weather = get_weather_direct(lat, lng, "2020-01-01", "2020-01-02")  # Função direta
-            weather_dict = extract_weather_to_dict(raw_weather, lat, lng, city_id)  # Extractor
-            weather_results.append(weather_dict)
-        
-        df_weather = extract_multiple_weather_to_df(weather_results)  # Extractor
-        print(f"   DataFrame: {len(df_weather)} registros")
-        
+        raw_ear = get_ear_data_direct(EAR_PACKAGE, start_date="2020-01-01", end_date="2020-12-31", page_size=50)
+        print(f"Controller retornou: {type(raw_ear)}")
+        print(f"Tamanho: {len(raw_ear) if isinstance(raw_ear, (list, dict)) else 'N/A'}")
+        df_ear = extract_ear_to_df(raw_ear)
+        print(f"Extractor criou: DataFrame com {len(df_ear)} registros")
+        if not df_ear.empty:
+            print("Colunas:", list(df_ear.columns)[:5], "...")
+            print("Preview:")
+            print(df_ear.head(2).to_string())
     except Exception as e:
-        print(f"   Erro: {e}")
+        print(f"❌ Erro no EAR: {e}")
+
+    # 4. TESTE WEATHER
+    print("\n4️⃣ WEATHER:")
+    print("-" * 20)
+    try:
+        raw_weather = get_weather_direct(-15.7939, -47.8828, "2020-01-01", "2020-01-03")
+        print(f"Controller retornou: {type(raw_weather)}")
+        weather_dict = extract_weather_to_dict(raw_weather, -15.7939, -47.8828, "BSB")
+        print(f"Extractor criou: Dict com status '{weather_dict['extraction_status']}'")
+        weather_list = [weather_dict]
+        df_weather = extract_multiple_weather_to_df(weather_list)
+        print(f"DataFrame weather: {len(df_weather)} registros")
+        if not df_weather.empty:
+            print("Colunas:", list(df_weather.columns))
+            print("Preview:")
+            print(df_weather.head(1).to_string())
+    except Exception as e:
+        print(f"❌ Erro no Weather: {e}")
+
+    print("\n✅ TESTE CONCLUÍDO!")
 
 if __name__ == "__main__":
-    teste_ons_extractors()
-    teste_weather_extractors()
+    teste_completo()
