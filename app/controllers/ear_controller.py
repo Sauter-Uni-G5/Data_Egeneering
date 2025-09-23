@@ -15,5 +15,4 @@ def get_ear_data(
     page: int = Query(1, description="Número da página"),
     page_size: int = Query(100, description="Tamanho da página")
 ):
-    """Endpoint para dados de Energia Armazenada em Reservatórios (EAR)"""
     return get_reservoir_data(package_id, ano, mes, nome_reservatorio, start_date, end_date, page, page_size)
