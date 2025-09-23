@@ -24,7 +24,9 @@ def aggregate_ear_hydro_registry(
     df_registry_sel = df_registry[[
         "nom_reservatorio",
         "val_volmax",
-        "id_reservatorio"
+        "id_reservatorio",
+        "val_latitude",
+        "val_longitude"
     ]].copy()
 
     df = pd.merge(
@@ -54,7 +56,9 @@ def aggregate_ear_hydro_registry(
         "ear_total_mwmes",
         "val_volmax",
         "id_reservatorio",
-        "val_volumeutilcon"
+        "val_volumeutilcon",
+        "val_latitude",
+        "val_longitude"
     ]
     df = df[final_cols]
     df = df.sort_values(["id_reservatorio", "ear_data"]).reset_index(drop=True)
