@@ -117,11 +117,13 @@ def get_reservoir_data(
         else:
             return JSONResponse({"error": "Informe 'ano' ou 'start_date'/'end_date'."}, status_code=400)
 
-        df_list = [
-            read_parquet_from_url(find_parquet_url(metadata, y))
-            for y in years
-            if find_parquet_url(metadata, y)
-        ]
+        urls_to_read = []
+        for y in years:
+            url = find_parquet_url(metadata, y)
+            if url:
+                urls_to_read.append(url)
+
+        df_list = [read_parquet_from_url(url) for url in urls_to_read]
         if not df_list:
             return JSONResponse({"error": "Nenhum parquet encontrado para os anos requisitados."}, status_code=404)
 
