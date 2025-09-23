@@ -6,5 +6,7 @@ numpy
 pyarrow
 google-cloud-storage
 python-multipart
+scikit-learn
 pytest
 httpx
+
