@@ -8,7 +8,7 @@ def get_weather_data(latitude: float, longitude: float, start_date: str, end_dat
         "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum"
         "&timezone=America/Sao_Paulo"
     )
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code == 200:
         return response.json()
     return {"error": "Não foi possível obter os dados meteorológicos", "status_code": response.status_code}

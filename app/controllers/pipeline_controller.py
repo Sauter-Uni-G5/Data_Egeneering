@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 import tempfile
 import os
-
+import pandas as pd
 from app.controllers.registry_controller import get_registry_direct
 from app.controllers.ear_controller import get_ear_data_direct
 from app.controllers.hydro_controller import get_hydro_data_direct
@@ -12,6 +12,7 @@ from app.pipeline.extractors.ons_extractor import (
 from app.pipeline.transformers.data_cleaner import clean_and_normalize
 from app.pipeline.transformers.aggregator import aggregate_ear_hydro_registry
 from app.services.gcs_service import upload_to_gcs
+from app.pipeline.extractors.weather_parallel import fetch_weather_batch
 
 router = APIRouter()
 
@@ -41,6 +42,15 @@ def run_full_pipeline(
 
         # 4. Agregação final
         df_final = aggregate_ear_hydro_registry(df_ear_clean, df_hydro_clean, df_registry_clean)
+        
+        df_weather = fetch_weather_batch(df_final, start_date=start_date, end_date=end_date, max_workers=5)
+
+        df_final = pd.merge(
+            df_final,
+            df_weather,
+            on=["id_reservatorio", "ear_data"],
+            how="left"
+        )
 
         # 5. Salva CSV temporário
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp_csv:
