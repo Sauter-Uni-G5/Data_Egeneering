@@ -1,50 +1,35 @@
 import os
-import pandas as pd
-import io
 from datetime import datetime
 from google.cloud import storage
 from typing import Dict
 
 
-def upload_parquet_to_gcs(parquet_bytes: bytes, dataset_name: str, original_filename: str) -> Dict:
-    bucket_name = "sauter_university"
-    project_id = os.getenv("GCP_PROJECT_ID", "seu-project-id-aqui")
+def upload_folder_to_gcs(folder_path: str, bucket_name: str = "sauter_university") -> Dict:
+    if not os.path.isdir(folder_path):
+        raise ValueError(f"O caminho fornecido não é uma pasta válida: {folder_path}")
     
-    # Data de hoje para versionamento
     today = datetime.now().strftime("%Y-%m-%d")
+    gcs_root = f"Data_Engineering/processed/{today}"
     
-    # Validar se é um parquet válido lendo os bytes
-    try:
-        # Ler o parquet direto dos bytes para validar
-        df = pd.read_parquet(io.BytesIO(parquet_bytes))
-        records_count = len(df)
-        
-        if df.empty:
-            raise ValueError("Arquivo parquet está vazio")
-            
-    except Exception as e:
-        raise ValueError(f"Erro ao ler arquivo parquet: {str(e)}")
-    
-    # Criar caminho no bucket
-    timestamp = datetime.now().strftime("%H%M%S")
-    file_path = f"Data_Engineering/processed/{dataset_name}/{today}/{timestamp}_{original_filename}"
-    
-    # Inicializar cliente GCS
-    client = storage.Client(project=project_id)
+    client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_path)
     
-    # Upload direto dos bytes para o GCS
-    blob.upload_from_string(
-        parquet_bytes,
-        content_type='application/octet-stream'
-    )
-    
-    print(f"✓ Arquivo enviado: gs://{bucket_name}/{file_path}")
+    files_uploaded = 0
+
+    #processed/{data_de_hoje}/{subpastas_e_arquivos}
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            local_file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(local_file_path, folder_path)
+            gcs_file_path = f"{gcs_root}/{relative_path}"  # <- melhoria aplicada
+            
+            blob = bucket.blob(gcs_file_path)
+            blob.upload_from_filename(local_file_path)
+            print(f"✓ Arquivo enviado: gs://{bucket_name}/{gcs_file_path}")
+            files_uploaded += 1
     
     return {
-        "file_path": f"gs://{bucket_name}/{file_path}",
+        "folder_path": f"gs://{bucket_name}/{gcs_root}",
         "upload_date": today,
-        "records_count": records_count,
-        "file_size_bytes": len(parquet_bytes)
+        "files_uploaded": files_uploaded
     }

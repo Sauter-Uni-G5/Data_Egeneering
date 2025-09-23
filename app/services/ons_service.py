@@ -104,7 +104,7 @@ def get_reservoir_data(
     page: int,
     page_size: int
 ) -> JSONResponse:
-    """Função principal que processa dados de reservatórios (EAR e Hydro)"""
+    #Função principal que processa dados de reservatórios (EAR e Hydro)"""
     try:
         metadata = fetch_package_metadata(package_id)
 
@@ -145,7 +145,6 @@ def get_reservoir_data(
                 else:
                     df = df[df[date_col].dt.year == ano]
 
-        # Filtro por nome do reservatório (se existir a coluna)
         if nome_reservatorio and "nom_reservatorio" in df.columns:
             df = df[df["nom_reservatorio"].astype(str).str.contains(nome_reservatorio, case=False, na=False)]
 

@@ -7,5 +7,4 @@ router = APIRouter()
 def get_registry(
     package_id: str = Query(..., description="Package ID for the registry dataset")
 ):
-    """Endpoint to fetch registry (cadastral) data for all reservoirs"""
     return get_registry_data(package_id)
