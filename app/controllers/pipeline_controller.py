@@ -52,6 +52,8 @@ def run_full_pipeline(
             how="left"
         )
 
+        df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio"])
+
         # 5. Salva CSV temporário
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp_csv:
             df_final.to_csv(temp_csv.name, index=False, encoding="utf-8", sep=";")

@@ -35,6 +35,11 @@ def main():
 
     # 5. Busca meteorologia em paralelo e faz merge
     df_weather = fetch_weather_batch(df_final, start_date="2020-01-01", end_date="2020-12-31", max_workers=5)
+    
+    print("\nPreview do DataFrame de weather:")
+    print(df_weather.head(10))
+    print(df_weather.dtypes)
+    
     df_final = pd.merge(
         df_final,
         df_weather,
@@ -52,6 +57,10 @@ def main():
     print("\nColunas após diff:", df_final_diff.columns)
     print(df_final_diff[["id_reservatorio", "ear_data", "ear_reservatorio_percentual", "ear_reservatorio_percentual_diff1"]].head(10).to_string())
 
+    df_final = clean_and_normalize(df_final, date_col="ear_data")
+
+    df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio"])
+    
     # 7. Salva o resultado
     df_final.to_csv("tabela_final.csv", index=False, encoding="utf-8", sep=";")
     print("Tabela final agregada salva como tabela_final.csv")

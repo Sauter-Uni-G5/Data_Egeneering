@@ -32,6 +32,22 @@ def clean_and_normalize(df: pd.DataFrame, cols_to_normalize=None, date_col: str 
         ]
 
     cols_existentes = [col for col in cols_to_normalize if col in df.columns]
+    
+    if "tip_reservatorio" in df.columns:
+        df["tip_reservatorio"] = (
+            df["tip_reservatorio"]
+            .astype(str)
+            .str.lower()
+            .str.contains("com usina")
+            .astype(int)
+        )
+    
+    # Separa data em dia, mês e ano
+    if date_col and date_col in df.columns:
+        df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
+        df["dia"] = df[date_col].dt.day
+        df["mes"] = df[date_col].dt.month
+        df["ano"] = df[date_col].dt.year
 
     # Converter para float ANTES de tratar nulos e normalizar
     for col in cols_existentes:
@@ -39,7 +55,7 @@ def clean_and_normalize(df: pd.DataFrame, cols_to_normalize=None, date_col: str 
 
     # Tratar valores nulos (preencher com zero)
     if cols_existentes:
-        df[cols_existentes] = df[cols_existentes].fillna(0)
+        #df[cols_existentes] = df[cols_existentes].fillna(0)
         scaler = MinMaxScaler()
         df[cols_existentes] = scaler.fit_transform(df[cols_existentes])
 
