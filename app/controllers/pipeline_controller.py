@@ -13,6 +13,7 @@ from app.pipeline.transformers.data_cleaner import clean_and_normalize
 from app.pipeline.transformers.aggregator import aggregate_ear_hydro_registry
 from app.services.gcs_service import upload_to_gcs
 from app.pipeline.extractors.weather_parallel import fetch_weather_batch
+from app.pipeline.transformers.feature_engineering import create_lags, create_diffs
 
 router = APIRouter()
 
@@ -51,6 +52,14 @@ def run_full_pipeline(
             on=["id_reservatorio", "ear_data"],
             how="left"
         )
+        df_final = create_lags(df_final, columns="val_volumeutilcon", lag=1, groupby="id_reservatorio")
+        df_final = create_lags(df_final, columns="val_volumeutilcon", lag=7, groupby="id_reservatorio")
+        df_final = create_lags(df_final, columns="val_volumeutilcon", lag=14, groupby="id_reservatorio")
+        df_final = create_lags(df_final, columns="val_volumeutilcon", lag=30, groupby="id_reservatorio")
+        df_final = create_diffs(df_final, columns="val_volumeutilcon", periods=1, groupby="id_reservatorio")
+        df_final = create_diffs(df_final, columns="val_volumeutilcon", periods=7, groupby="id_reservatorio")
+
+        df_final = df_final[df_final["id_reservatorio"].notnull() & (df_final["id_reservatorio"] != "")]
 
         df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio"])
 
