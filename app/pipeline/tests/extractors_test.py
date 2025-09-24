@@ -72,7 +72,7 @@ def teste_completo():
     print("\n4️⃣ WEATHER:")
     print("-" * 20)
     try:
-        raw_weather = get_weather_direct(-15.7939, -47.8828, "2020-01-01", "2020-01-03")
+        raw_weather = get_weather_direct(-15.7939, -47.8828, "2020-01-01", "2021-01-03")
         print(f"Controller retornou: {type(raw_weather)}")
         weather_dict = extract_weather_to_dict(raw_weather, -15.7939, -47.8828, "BSB")
         print(f"Extractor criou: Dict com status '{weather_dict['extraction_status']}'")

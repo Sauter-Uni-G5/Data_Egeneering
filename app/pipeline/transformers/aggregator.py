@@ -15,7 +15,6 @@ def aggregate_ear_hydro_registry(
     ]].copy()
 
     df_hydro_sel = df_hydro[[
-        "nom_bacia",
         "id_reservatorio",
         "din_instante",
         "val_volumeutilcon"
@@ -42,9 +41,9 @@ def aggregate_ear_hydro_registry(
     df = pd.merge(
         df,
         df_hydro_sel,
-        left_on=["id_reservatorio", "nom_bacia", "ear_data"],
-        right_on=["id_reservatorio", "nom_bacia", "din_instante"],
-        how="left"
+        left_on=["id_reservatorio", "ear_data"],
+        right_on=["id_reservatorio", "din_instante"],
+        how="inner"
     )
 
     final_cols = [
@@ -57,9 +56,9 @@ def aggregate_ear_hydro_registry(
         "val_volmax",
         "id_reservatorio",
         "val_volumeutilcon",
-        "val_latitude",
-        "val_longitude"
+        "val_latitude",      # mantenha aqui
+        "val_longitude"      # mantenha aqui
     ]
-    df = df[final_cols]
-    df = df.sort_values(["id_reservatorio", "ear_data"]).reset_index(drop=True)
-    return df
+    df_final = df[final_cols]
+    df_final = df_final.sort_values(["id_reservatorio", "ear_data"]).reset_index(drop=True)
+    return df_final
