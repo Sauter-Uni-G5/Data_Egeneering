@@ -6,14 +6,14 @@ def clean_and_normalize(df: pd.DataFrame, cols_to_normalize=None, date_col: str 
 
     # Converter todas as colunas que parecem numéricas para float
     for col in df.columns:
-        # Tenta converter para float se a coluna não for de texto/data
         if df[col].dtype == object:
             try:
-                df[col] = pd.to_numeric(df[col], errors="ignore")
-            except Exception:
-                pass
+                df[col] = pd.to_numeric(df[col])
+            except (ValueError, TypeError):
 
-    # Separar dia, mes, ano se date_col for informado
+                continue
+
+
     if date_col and date_col in df.columns:
         df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
         df["dia"] = df[date_col].dt.day

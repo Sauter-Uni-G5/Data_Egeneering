@@ -1,7 +1,5 @@
 import requests
 
-import requests
-
 def get_weather_data(latitude: float, longitude: float, start_date: str, end_date: str):
     url = (
         "https://archive-api.open-meteo.com/v1/archive"
