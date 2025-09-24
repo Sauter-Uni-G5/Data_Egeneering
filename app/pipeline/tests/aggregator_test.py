@@ -60,7 +60,10 @@ def main():
     df_final = clean_and_normalize(df_final, date_col="ear_data")
 
     df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio"])
-    
+
+    df_final = df_final[df_final["id_reservatorio"].notnull() & (df_final["id_reservatorio"] != "")]
+
+
     # 7. Salva o resultado
     df_final.to_csv("tabela_final.csv", index=False, encoding="utf-8", sep=";")
     print("Tabela final agregada salva como tabela_final.csv")
