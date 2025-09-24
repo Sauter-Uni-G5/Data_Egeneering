@@ -21,8 +21,8 @@ def fetch_weather_for_reservoir(reservatorio_id, lat, lon, start_date, end_date)
     return df
 
 def fetch_weather_batch(df, start_date, end_date, max_workers=5):
-    # Seleciona reservatórios únicos e suas coordenadas
     unique_reservoirs = df[["id_reservatorio", "val_latitude", "val_longitude"]].drop_duplicates()
+    unique_reservoirs = unique_reservoirs.dropna(subset=["val_latitude", "val_longitude"])
     results = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
@@ -38,5 +38,5 @@ def fetch_weather_batch(df, start_date, end_date, max_workers=5):
         ]
         for future in as_completed(futures):
             results.append(future.result())
-    # Concatena todos os DataFrames
+
     return pd.concat(results, ignore_index=True)
