@@ -5,7 +5,9 @@ uvicorn
 numpy
 pyarrow
 google-cloud-storage
+google-cloud-bigquery
 python-multipart
+python-dotenv
 scikit-learn
 pytest
 httpx
