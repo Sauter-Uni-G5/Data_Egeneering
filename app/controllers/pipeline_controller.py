@@ -61,13 +61,11 @@ async def run_pipeline(
         if 'ear_data' in df_final.columns:
             df_final['ear_data'] = pd.to_datetime(df_final['ear_data']).dt.date
 
-        # Adicionar metadados de controle
+        df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio", "val_latitude", "val_longitude"])
+
         today = datetime.now().strftime("%Y-%m-%d")
         df_final['processed_date'] = today
         df_final['partition_date'] = today
-
-        df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio", "val_latitude", "val_longitude"])        
-        
         logger.info(f"DataFrame final tem {len(df_final)} registros")
         
         print(df_final.dtypes)
