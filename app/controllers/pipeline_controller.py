@@ -15,11 +15,10 @@ from app.pipeline.extractors.ons_extractor import (
 )
 from app.pipeline.transformers.data_cleaner import clean_and_normalize
 from app.pipeline.transformers.aggregator import aggregate_ear_hydro_registry
-from app.pipeline.transformers.feature_engineering import create_lags, create_diffs
 from app.services.gcs_service import upload_to_gcs
 from app.pipeline.extractors.weather_parallel import fetch_weather_batch
 from app.services.bigquery_service import BigQueryService
-from app.pipeline.transformers.feature_engineering import create_lags, create_diffs
+from app.pipeline.transformers.feature_engineering import create_lags, create_diffs, create_rolling_mean
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -50,29 +49,26 @@ async def run_pipeline(
 
         df_final = aggregate_ear_hydro_registry(df_ear_clean, df_hydro_clean, df_registry_clean)
         
-        df_weather = fetch_weather_batch(df_final, start_date=start_date, end_date=end_date, max_workers=5)
-        # FIM DAS LINHAS QUE NÃO PODEM SER ALTERADAS
+        #df_weather = fetch_weather_batch(df_final, start_date=start_date, end_date=end_date, max_workers=5)
 
-        # Weather merge (precisa de ear_data)
-        if not df_weather.empty:
-            df_final = pd.merge(
-                df_final,
-                df_weather,
-                on=["id_reservatorio", "ear_data"],
-                how="left"
-            )
+        #if not df_weather.empty:
+        #    df_final = pd.merge(
+        #        df_final,
+        #        df_weather,
+        #        on=["id_reservatorio", "ear_data"],
+        #        how="left"
+        #    )
 
-        # AGORA SIM: Feature engineering (ANTES de dropar colunas)
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=1, groupby="id_reservatorio")
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=7, groupby="id_reservatorio")
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=14, groupby="id_reservatorio")
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=30, groupby="id_reservatorio")
         df_final = create_diffs(df_final, columns="val_volumeutilcon", periods=1, groupby="id_reservatorio")
         df_final = create_diffs(df_final, columns="val_volumeutilcon", periods=7, groupby="id_reservatorio")
+        df_final = create_rolling_mean(df_final, columns="val_volumeutilcon", window=7, groupby="id_reservatorio")
 
         df_final = df_final[df_final["id_reservatorio"].notnull() & (df_final["id_reservatorio"] != "")]
 
-        # Garantir formato correto das datas ANTES de dropar
         if 'ear_data' in df_final.columns:
             df_final['ear_data'] = pd.to_datetime(df_final['ear_data']).dt.date
 
@@ -81,8 +77,7 @@ async def run_pipeline(
         df_final['processed_date'] = today
         df_final['partition_date'] = today
 
-        # DROPAR COLUNAS POR ÚLTIMO (depois de tudo)
-        df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio"])
+        df_final = df_final.drop(columns=["nom_bacia", "ear_data", "tip_reservatorio", "nom_reservatorio", "val_latitude", "val_longitude"])        
         
         logger.info(f"DataFrame final tem {len(df_final)} registros")
         

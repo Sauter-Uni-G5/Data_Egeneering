@@ -104,7 +104,6 @@ def get_reservoir_data(
     page: int,
     page_size: int
 ) -> JSONResponse:
-    #Função principal que processa dados de reservatórios (EAR e Hydro)"""
     try:
         metadata = fetch_package_metadata(package_id)
 
@@ -129,7 +128,6 @@ def get_reservoir_data(
 
         df = pd.concat(df_list, ignore_index=True)
 
-        # Procurar pela coluna de data (flexível para diferentes datasets)
         date_col = None
         for col in ["ear_data", "data", "dt_medicao", "dt"]:
             if col in df.columns:
