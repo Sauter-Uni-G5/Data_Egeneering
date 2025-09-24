@@ -16,7 +16,6 @@ from app.pipeline.extractors.ons_extractor import (
 from app.pipeline.transformers.data_cleaner import clean_and_normalize
 from app.pipeline.transformers.aggregator import aggregate_ear_hydro_registry
 from app.services.gcs_service import upload_to_gcs
-from app.pipeline.extractors.weather_parallel import fetch_weather_batch
 from app.services.bigquery_service import BigQueryService
 from app.pipeline.transformers.feature_engineering import create_lags, create_diffs, create_rolling_mean
 
@@ -48,16 +47,6 @@ async def run_pipeline(
         df_hydro_clean = clean_and_normalize(df_hydro, date_col="din_instante" if "din_instante" in df_hydro.columns else None)
 
         df_final = aggregate_ear_hydro_registry(df_ear_clean, df_hydro_clean, df_registry_clean)
-        
-        #df_weather = fetch_weather_batch(df_final, start_date=start_date, end_date=end_date, max_workers=5)
-
-        #if not df_weather.empty:
-        #    df_final = pd.merge(
-        #        df_final,
-        #        df_weather,
-        #        on=["id_reservatorio", "ear_data"],
-        #        how="left"
-        #    )
 
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=1, groupby="id_reservatorio")
         df_final = create_lags(df_final, columns="val_volumeutilcon", lag=7, groupby="id_reservatorio")
@@ -81,6 +70,10 @@ async def run_pipeline(
         
         logger.info(f"DataFrame final tem {len(df_final)} registros")
         
+        print(df_final.dtypes)
+        print(df_final.head(10))
+
+
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as temp_csv:
             df_final.to_csv(temp_csv.name, index=False, encoding="utf-8", sep=",")
             temp_csv_path = temp_csv.name
