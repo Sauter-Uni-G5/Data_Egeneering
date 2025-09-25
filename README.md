@@ -7,6 +7,9 @@
 ## Sobre
 Projeto da Sauter University: AI Specialists Programs. Este projeto consiste em treinar um modelo de Machine Learning usando LightGBM com implementações feitas utilizando todas as devidas ferramentas do Google Cloud Plataform.
 
+### Link da documentação
+https://docs.google.com/document/d/1N1U5s-VO5TMvM0JlVxlURNRP4DPCnuwJ_YJ9cjG_7Mw/edit?pli=1&tab=t.0
+
 ## Como configurar
 ### API: Data_engineer.
 - Utilizar Python versão 3.10 ou superior.
