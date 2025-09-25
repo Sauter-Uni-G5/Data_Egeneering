@@ -63,3 +63,10 @@ def extract_ear_to_df(raw_data: Any) -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Erro ao transformar EAR em DataFrame: {e}")
         return pd.DataFrame()
+
+def process_dates(df: pd.DataFrame, df_hydro_sel: pd.DataFrame) -> None:
+    """
+    Processa as colunas de data dos DataFrames df e df_hydro_sel, convertendo para o tipo datetime.date
+    """
+    df["ear_data"] = pd.to_datetime(df["ear_data"]).dt.date
+    df_hydro_sel["din_instante"] = pd.to_datetime(df_hydro_sel["din_instante"]).dt.date
