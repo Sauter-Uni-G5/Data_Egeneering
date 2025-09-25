@@ -1,6 +1,9 @@
 # Data Engineering - API
 ## Responsáveis
- [Allan J.](https://github.com/allanjose001) | [Ismael D.](https://github.com/ismael-ds-correia)
+ [Allan J.](https://github.com/allanjose001) | 
+ [Ismael D.](https://github.com/ismael-ds-correia) |
+ [Alcielma L.](https://github.com/Alcielma)
+
 ## Sobre
 Projeto da Sauter University: AI Specialists Programs. Este projeto consiste em treinar um modelo de Machine Learning usando LightGBM com implementações feitas utilizando todas as devidas ferramentas do Google Cloud Plataform.
 
@@ -54,3 +57,60 @@ http://127.0.0.1:8000/api/pipeline/run?registry_package_id=a849a9c1-09b8-4b9b-84
 
 ### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" height="40" alt="java logo"/> [Python](https://www.python.org)
 * Versão 3.8.10
+
+
+# Terraform
+
+## Sobre
+Este módulo Terraform provisiona a infraestrutura necessária no Google Cloud Platform (GCP) para hospedar a API. Ele cria os recursos básicos de autenticação, banco de dados e execução do serviço em Cloud Run.
+
+## Recursos Criados
+
+Service Account com permissões para BigQuery, Artifact Registry e Cloud Run.
+
+BigQuery: um Dataset e uma Tabela para armazenamento de dados.
+
+Cloud Run: serviço que hospeda a API, configurado para receber a imagem do Artifact Registry.
+
+Outputs úteis:
+
+  URL do serviço no Cloud Run
+
+  Service Account
+
+  Dataset ID e Table ID do BigQuery
+
+## Como configurar
+
+Instale o Terraform
+ (v0.13 ou superior).
+
+Configure o Google Cloud SDK (gcloud auth application-default login).
+
+Inicialize o Terraform:
+
+## Como configurar
+
+1.Instale o Terraform
+ (v0.13 ou superior).
+
+2.Configure o Google Cloud SDK (gcloud auth application-default login).
+
+3.Inicialize o Terraform:
+    terraform init
+4.Aplique a configuração:
+    terraform apply -auto-approve
+
+## Variáveis Principais
+
+-project: ID do projeto no GCP
+
+-region: região de implantação (ex: us-central1)
+
+-dataset_id: nome do Dataset no BigQuery
+
+-table_id: nome da Tabela no BigQuery
+
+-image_repo: caminho do repositório da imagem no Artifact Registry
+
+-image_tag: tag da imagem (ex: latest)
