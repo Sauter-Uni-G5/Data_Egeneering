@@ -1,62 +1,37 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-def clean_and_normalize(df: pd.DataFrame, cols_to_normalize=None, date_col: str = None):
+def normalize_and_clean(df: pd.DataFrame, date_col: str = "ear_data"):
     df = df.copy()
 
-    # Converter todas as colunas que parecem numéricas para float
-    for col in df.columns:
-        if df[col].dtype == object:
-            try:
-                df[col] = pd.to_numeric(df[col])
-            except (ValueError, TypeError):
-
-                continue
-
-
-    if date_col and date_col in df.columns:
+    # 1. Criar colunas de dia, mês e ano a partir da data
+    if date_col in df.columns:
         df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
         df["dia"] = df[date_col].dt.day
         df["mes"] = df[date_col].dt.month
         df["ano"] = df[date_col].dt.year
 
-    if cols_to_normalize is None:
-        cols_to_normalize = [
-            "ear_reservatorio_percentual",
-            "ear_total_mwmes",
-            "val_volmax",
-            "val_volumeutilcon",
-            "temperature_2m_max",
-            "temperature_2m_min",
-            "precipitation_sum",
-        ]
+    # 2. Remover colunas de nomes/texto
+    cols_to_drop = ["nom_reservatorio", "tip_reservatorio", "nom_bacia", "ear_data"]
+    for col in cols_to_drop:
+        if col in df.columns:
+            df = df.drop(columns=col)
 
-    cols_existentes = [col for col in cols_to_normalize if col in df.columns]
-    
-    if "tip_reservatorio" in df.columns:
-        df["tip_reservatorio"] = (
-            df["tip_reservatorio"]
-            .astype(str)
-            .str.lower()
-            .str.contains("com usina")
-            .astype(int)
-        )
-    
-    # Separa data em dia, mês e ano
-    if date_col and date_col in df.columns:
-        df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-        df["dia"] = df[date_col].dt.day
-        df["mes"] = df[date_col].dt.month
-        df["ano"] = df[date_col].dt.year
+    # 3. Selecionar apenas colunas numéricas (exceto id_reservatorio, dia, mes, ano)
+    cols_to_keep = ["id_reservatorio", "dia", "mes", "ano"]
+    numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    cols_final = cols_to_keep + [col for col in numeric_cols if col not in cols_to_keep]
+    df = df[cols_final]
 
-    # Converter para float ANTES de tratar nulos e normalizar
-    for col in cols_existentes:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    # Tratar valores nulos (preencher com zero)
-    if cols_existentes:
-        #df[cols_existentes] = df[cols_existentes].fillna(0)
+    # 4. Normalizar colunas numéricas (exceto id_reservatorio, dia, mes, ano)
+    cols_to_normalize = [col for col in df.columns if col not in cols_to_keep]
+    if cols_to_normalize:
         scaler = MinMaxScaler()
-        df[cols_existentes] = scaler.fit_transform(df[cols_existentes])
+        df[cols_to_normalize] = scaler.fit_transform(df[cols_to_normalize])
 
+    # 5. Limpeza: remover linhas onde val_volumeutilcon é nulo
+    if "val_volumeutilcon" in df.columns:
+        df = df[df["val_volumeutilcon"].notnull()]
+
+    df = df.reset_index(drop=True)
     return df

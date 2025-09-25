@@ -16,6 +16,7 @@ def aggregate_ear_hydro_registry(
 
     df_hydro_sel = df_hydro[[
         "id_reservatorio",
+        "nom_bacia", 
         "din_instante",
         "val_volumeutilcon"
     ]].copy()
@@ -35,29 +36,30 @@ def aggregate_ear_hydro_registry(
         how="left"
     )
 
+    # Normaliza datas para .dt.date para garantir merge correto
     df["ear_data"] = pd.to_datetime(df["ear_data"], errors="coerce")
     df_hydro_sel["din_instante"] = pd.to_datetime(df_hydro_sel["din_instante"], errors="coerce")
+    df["ear_data"] = df["ear_data"].dt.date
+    df_hydro_sel["din_instante"] = df_hydro_sel["din_instante"].dt.date
 
+    # MERGE AJUSTADO: inclui nom_bacia
     df = pd.merge(
         df,
         df_hydro_sel,
         left_on=["id_reservatorio", "ear_data"],
         right_on=["id_reservatorio", "din_instante"],
-        how="inner"
+        how="left"
     )
 
     final_cols = [
         "nom_reservatorio",
         "tip_reservatorio",
-        "nom_bacia",
         "ear_data",
         "ear_reservatorio_percentual",
         "ear_total_mwmes",
         "val_volmax",
         "id_reservatorio",
-        "val_volumeutilcon",
-        "val_latitude",      # mantenha aqui
-        "val_longitude"      # mantenha aqui
+        "val_volumeutilcon"
     ]
     df_final = df[final_cols]
     df_final = df_final.sort_values(["id_reservatorio", "ear_data"]).reset_index(drop=True)
