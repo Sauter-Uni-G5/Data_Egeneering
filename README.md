@@ -1,7 +1,6 @@
 # Data Engineering - API
-## Integrantes
- [Alcielma L.](https://github.com/Alcielma) | [Allan J.](https://github.com/allanjose001) | [Ismael D.](https://github.com/ismael-ds-correia) | [Luis F. de Barros](https://github.com/luis-fil) | [Micaelle F.](https://github.com/micaelleffr)
-
+## Responsáveis
+ [Allan J.](https://github.com/allanjose001) | [Ismael D.](https://github.com/ismael-ds-correia)
 ## Sobre
 Projeto da Sauter University: AI Specialists Programs. Este projeto consiste em treinar um modelo de Machine Learning usando LightGBM com implementações feitas utilizando todas as devidas ferramentas do Google Cloud Plataform.
 
